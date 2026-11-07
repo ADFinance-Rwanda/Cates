@@ -1,0 +1,9 @@
+GET /api/me -> 200 user=Alice Acme role=ORG_ADMIN org=Acme
+GET /api/dashboard -> 200 scope=ORGANIZATION total=3 completed=1 pending=2 overdue=1 byStatus={'TODO': 1, 'IN_PROGRESS': 1, 'DONE': 1}
+GET /api/tasks -> 200 count=3
+GET /api/projects -> 200 count=1
+using project Website refresh id=66666666-6666-6666-6666-666666666666
+POST /api/tasks -> 201 id=9d5e1bf9-8edd-4deb-97cb-c6e263240bbc version=0 title=Submission evidence task
+GET /api/tasks/{id} -> 200 title=Submission evidence task status=TODO
+PUT /api/tasks/{id} -> 200 title=Submission evidence task updated status=IN_PROGRESS version=1
+DELETE /api/tasks/{id} -> 204

@@ -1,0 +1,29 @@
+Command: docker exec taskflow-postgres pg_dump -U taskflow_app -d taskflow -Fc
+Backup complete: backups/taskflow-20261107T123943Z.dump
+Bytes: 28584
+file: PostgreSQL custom database dump - v1.16-0
+pg_restore -l (header and table data):
+;
+; Archive created at 2026-11-07 12:39:44 UTC
+;     dbname: taskflow
+;     TOC Entries: 68
+;     Compression: gzip
+;     Dump Version: 1.16-0
+;     Format: CUSTOM
+;     Integer: 4 bytes
+;     Offset: 8 bytes
+;     Dumped from database version: 17.11
+;     Dumped by pg_dump version: 17.11
+;
+;
+; Selected TOC Entries:
+3558; 0 16554 TABLE DATA public audit_logs taskflow_app
+3559; 0 16560 TABLE DATA public flyway_schema_history taskflow_app
+3560; 0 16566 TABLE DATA public job_outbox taskflow_app
+3561; 0 16574 TABLE DATA public notification_deliveries taskflow_app
+3562; 0 16577 TABLE DATA public organization_members taskflow_app
+3563; 0 16581 TABLE DATA public organizations taskflow_app
+3564; 0 16585 TABLE DATA public projects taskflow_app
+3565; 0 16591 TABLE DATA public task_idempotency_keys taskflow_app
+3566; 0 16594 TABLE DATA public tasks taskflow_app
+3567; 0 16601 TABLE DATA public users taskflow_app

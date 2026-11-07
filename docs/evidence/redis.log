@@ -1,0 +1,10 @@
+redis-cli PING
+PONG
+dashboard keys: 2
+version keys: 1
+rate-limit keys: 3
+TTL dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = -1s
+GET dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = 6
+TTL dashboard:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:22222222-2222-2222-2222-222222222222:ORGANIZATION:3 = 58s
+TTL dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = -1s
+GET dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = 6
