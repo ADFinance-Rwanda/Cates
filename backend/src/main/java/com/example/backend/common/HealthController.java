@@ -1,5 +1,6 @@
 package com.example.backend.common;
 
+import lombok.AllArgsConstructor;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.ResponseEntity;
@@ -11,15 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
+@AllArgsConstructor
 public class HealthController {
 
     private final JdbcTemplate jdbcTemplate;
     private final RedisConnectionFactory redisConnectionFactory;
-
-    public HealthController(JdbcTemplate jdbcTemplate, RedisConnectionFactory redisConnectionFactory) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.redisConnectionFactory = redisConnectionFactory;
-    }
 
     @GetMapping("/health")
     public Map<String, String> health() {

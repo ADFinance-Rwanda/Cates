@@ -2,6 +2,7 @@ package com.example.backend.worker;
 
 import com.example.backend.worker.JobOutbox;
 import com.example.backend.worker.JobOutboxRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -11,15 +12,11 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class OutboxService {
 
     private final JobOutboxRepository jobOutboxRepository;
     private final JobPublisher jobPublisher;
-
-    public OutboxService(JobOutboxRepository jobOutboxRepository, JobPublisher jobPublisher) {
-        this.jobOutboxRepository = jobOutboxRepository;
-        this.jobPublisher = jobPublisher;
-    }
 
     public UUID enqueue(String jobType, UUID organizationId, UUID entityId, Map<String, Object> payload) {
         Instant now = Instant.now();

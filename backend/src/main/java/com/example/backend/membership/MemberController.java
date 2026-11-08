@@ -3,6 +3,7 @@ package com.example.backend.membership;
 import com.example.backend.membership.MemberRequests.AddMemberRequest;
 import com.example.backend.membership.MemberRequests.ChangeRoleRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
@@ -21,13 +22,10 @@ import java.util.UUID;
 @Profile("api")
 @RequestMapping("/api/members")
 @Tag(name = "Members")
+@RequiredArgsConstructor
 public class MemberController {
 
     private final MembershipService membershipService;
-
-    public MemberController(MembershipService membershipService) {
-        this.membershipService = membershipService;
-    }
 
     @GetMapping
     @Operation(summary = "List members of the caller's organization. Adding or changing roles requires ORG_ADMIN or SUPER_ADMIN.")

@@ -5,6 +5,7 @@ import com.example.backend.audit.AuditLog;
 import com.example.backend.audit.AuditLogRepository;
 import com.example.backend.security.PermissionService;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -22,15 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("api")
 @RequestMapping("/api/audit")
 @Tag(name = "Audit")
+@RequiredArgsConstructor
 public class AuditController {
 
     private final AuditLogRepository auditLogRepository;
     private final PermissionService permissions;
-
-    public AuditController(AuditLogRepository auditLogRepository, PermissionService permissions) {
-        this.auditLogRepository = auditLogRepository;
-        this.permissions = permissions;
-    }
 
     @GetMapping
     @Operation(summary = "Read append-only audit events. ORG_ADMIN and SUPER_ADMIN only. There is no update or delete API.")

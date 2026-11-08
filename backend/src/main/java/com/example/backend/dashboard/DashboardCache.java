@@ -3,8 +3,8 @@ package com.example.backend.dashboard;
 import tools.jackson.databind.ObjectMapper;
 import com.example.backend.dashboard.DashboardResponse;
 import com.example.backend.config.AppProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -13,19 +13,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class DashboardCache {
-
-    private static final Logger log = LoggerFactory.getLogger(DashboardCache.class);
 
     private final StringRedisTemplate redis;
     private final ObjectMapper objectMapper;
     private final AppProperties properties;
-
-    public DashboardCache(StringRedisTemplate redis, ObjectMapper objectMapper, AppProperties properties) {
-        this.redis = redis;
-        this.objectMapper = objectMapper;
-        this.properties = properties;
-    }
 
     public long version(UUID organizationId) {
         try {

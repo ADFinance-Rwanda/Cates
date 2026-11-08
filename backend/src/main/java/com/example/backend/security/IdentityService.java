@@ -10,6 +10,7 @@ import com.example.backend.membership.MembershipRepository;
 import com.example.backend.organization.OrganizationRepository;
 import com.example.backend.user.UserRepository;
 import com.example.backend.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -20,24 +21,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class IdentityService {
 
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
     private final MembershipRepository memberRepository;
     private final UserService userProvisioner;
-
-    public IdentityService(
-            UserRepository userRepository,
-            OrganizationRepository organizationRepository,
-            MembershipRepository memberRepository,
-            UserService userProvisioner
-    ) {
-        this.userRepository = userRepository;
-        this.organizationRepository = organizationRepository;
-        this.memberRepository = memberRepository;
-        this.userProvisioner = userProvisioner;
-    }
 
     @Transactional
     public CurrentUser establish(Jwt jwt, String organizationHeader) {

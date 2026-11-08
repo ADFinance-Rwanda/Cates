@@ -4,12 +4,16 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Entity
 @Table(name = "task_idempotency_keys")
+@Getter
+@Setter
 public class IdempotencyRecord {
 
     @Id
@@ -32,60 +36,4 @@ public class IdempotencyRecord {
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public UUID getOrganizationId() {
-        return organizationId;
-    }
-
-    public void setOrganizationId(UUID organizationId) {
-        this.organizationId = organizationId;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public String getIdempotencyKey() {
-        return idempotencyKey;
-    }
-
-    public void setIdempotencyKey(String idempotencyKey) {
-        this.idempotencyKey = idempotencyKey;
-    }
-
-    public String getRequestHash() {
-        return requestHash;
-    }
-
-    public void setRequestHash(String requestHash) {
-        this.requestHash = requestHash;
-    }
-
-    public UUID getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(UUID taskId) {
-        this.taskId = taskId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
 }

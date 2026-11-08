@@ -2,8 +2,8 @@ package com.example.backend.worker;
 
 import com.example.backend.config.AppProperties;
 import com.example.backend.worker.JobPublisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.stream.Consumer;
@@ -27,9 +27,10 @@ import java.util.UUID;
 
 @Service
 @Profile("worker")
+@RequiredArgsConstructor
+@Slf4j
 public class BackgroundJobService {
 
-    private static final Logger log = LoggerFactory.getLogger(BackgroundJobService.class);
     private static final String GROUP = "workers";
 
     private final JdbcTemplate jdbcTemplate;
@@ -38,18 +39,6 @@ public class BackgroundJobService {
     private final AppProperties properties;
     private final String consumerName = "worker-" + UUID.randomUUID().toString().substring(0, 8);
     private volatile boolean groupReady;
-
-    public BackgroundJobService(
-            JdbcTemplate jdbcTemplate,
-            TransactionTemplate transactionTemplate,
-            StringRedisTemplate redis,
-            AppProperties properties
-    ) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.transactionTemplate = transactionTemplate;
-        this.redis = redis;
-        this.properties = properties;
-    }
 
     public void pollPending() {
         List<UUID> ids = jdbcTemplate.query("""

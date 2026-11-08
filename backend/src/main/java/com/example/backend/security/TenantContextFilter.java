@@ -11,6 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,17 +20,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@RequiredArgsConstructor
 public class TenantContextFilter extends OncePerRequestFilter {
 
     public static final String ORGANIZATION_HEADER = "X-Organization-Id";
 
     private final IdentityService identityService;
     private final ObjectMapper objectMapper;
-
-    public TenantContextFilter(IdentityService identityService, ObjectMapper objectMapper) {
-        this.identityService = identityService;
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

@@ -6,6 +6,7 @@ import com.example.backend.project.dto.ProjectResponse;
 import com.example.backend.project.dto.UpdateProjectRequest;
 import com.example.backend.project.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -28,13 +29,10 @@ import java.util.UUID;
 @Profile("api")
 @RequestMapping("/api/projects")
 @Tag(name = "Projects")
+@RequiredArgsConstructor
 public class ProjectController {
 
     private final ProjectService projectService;
-
-    public ProjectController(ProjectService projectService) {
-        this.projectService = projectService;
-    }
 
     @GetMapping
     @Operation(summary = "List projects in the caller's organization")

@@ -1,5 +1,6 @@
 package com.example.backend.idempotency;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,13 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class IdempotencyService {
 
     private final IdempotencyRepository repository;
-
-    public IdempotencyService(IdempotencyRepository repository) {
-        this.repository = repository;
-    }
 
     @Transactional(readOnly = true)
     public Optional<IdempotencyRecord> find(UUID organizationId, UUID userId, String key) {

@@ -9,6 +9,7 @@ import com.example.backend.organization.OrgStatus;
 import com.example.backend.organization.Organization;
 import com.example.backend.organization.OrganizationRepository;
 import com.example.backend.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,21 +18,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class OrganizationService {
 
     private final OrganizationRepository organizationRepository;
     private final PermissionService permissions;
     private final AuditService auditService;
-
-    public OrganizationService(
-            OrganizationRepository organizationRepository,
-            PermissionService permissions,
-            AuditService auditService
-    ) {
-        this.organizationRepository = organizationRepository;
-        this.permissions = permissions;
-        this.auditService = auditService;
-    }
 
     @Transactional(readOnly = true)
     public List<OrganizationResponse> list() {

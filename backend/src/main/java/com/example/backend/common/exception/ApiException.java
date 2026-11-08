@@ -1,9 +1,11 @@
 package com.example.backend.common.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 
+@Getter
 public class ApiException extends RuntimeException {
 
     private final HttpStatus status;
@@ -19,17 +21,5 @@ public class ApiException extends RuntimeException {
         this.status = status;
         this.code = code;
         this.details = details == null ? Map.of() : Map.copyOf(details);
-    }
-
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public Map<String, String> getDetails() {
-        return details;
     }
 }

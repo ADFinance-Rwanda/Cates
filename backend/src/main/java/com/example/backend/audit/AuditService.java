@@ -4,6 +4,7 @@ import com.example.backend.audit.AuditLog;
 import com.example.backend.audit.AuditLogRepository;
 import com.example.backend.security.CurrentUser;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -13,13 +14,10 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class AuditService {
 
     private final AuditLogRepository auditLogRepository;
-
-    public AuditService(AuditLogRepository auditLogRepository) {
-        this.auditLogRepository = auditLogRepository;
-    }
 
     public void record(CurrentUser principal, String action, String entityType, UUID entityId, Map<String, Object> metadata) {
         AuditLog entry = new AuditLog();

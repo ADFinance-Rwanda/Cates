@@ -1,8 +1,8 @@
 package com.example.backend.security;
 
 import com.example.backend.config.AppProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class RateLimiter {
-
-    private static final Logger log = LoggerFactory.getLogger(RateLimiter.class);
 
     private static final String LUA = """
             local key = KEYS[1]
@@ -33,14 +33,13 @@ public class RateLimiter {
 
     private final StringRedisTemplate redis;
     private final AppProperties properties;
-    private final DefaultRedisScript<Long> script;
+    private final DefaultRedisScript<Long> script = rateLimitScript();
 
-    public RateLimiter(StringRedisTemplate redis, AppProperties properties) {
-        this.redis = redis;
-        this.properties = properties;
-        this.script = new DefaultRedisScript<>();
-        this.script.setScriptText(LUA);
-        this.script.setResultType(Long.class);
+    private static DefaultRedisScript<Long> rateLimitScript() {
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>();
+        script.setScriptText(LUA);
+        script.setResultType(Long.class);
+        return script;
     }
 
     /**

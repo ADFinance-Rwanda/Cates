@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -14,6 +16,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "job_outbox")
+@Getter
+@Setter
 public class JobOutbox {
 
     @Id
@@ -49,92 +53,4 @@ public class JobOutbox {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getJobType() {
-        return jobType;
-    }
-
-    public void setJobType(String jobType) {
-        this.jobType = jobType;
-    }
-
-    public UUID getOrganizationId() {
-        return organizationId;
-    }
-
-    public void setOrganizationId(UUID organizationId) {
-        this.organizationId = organizationId;
-    }
-
-    public UUID getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(UUID entityId) {
-        this.entityId = entityId;
-    }
-
-    public Map<String, Object> getPayload() {
-        return payload;
-    }
-
-    public void setPayload(Map<String, Object> payload) {
-        this.payload = payload;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public int getAttempts() {
-        return attempts;
-    }
-
-    public void setAttempts(int attempts) {
-        this.attempts = attempts;
-    }
-
-    public Instant getAvailableAt() {
-        return availableAt;
-    }
-
-    public void setAvailableAt(Instant availableAt) {
-        this.availableAt = availableAt;
-    }
-
-    public String getLastError() {
-        return lastError;
-    }
-
-    public void setLastError(String lastError) {
-        this.lastError = lastError;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 }

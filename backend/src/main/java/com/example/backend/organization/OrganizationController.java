@@ -5,6 +5,7 @@ import com.example.backend.organization.OrganizationRequests.OrganizationRespons
 import com.example.backend.organization.OrganizationRequests.UpdateOrganizationRequest;
 import com.example.backend.organization.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
@@ -23,13 +24,10 @@ import java.util.UUID;
 @Profile("api")
 @RequestMapping("/api/organizations")
 @Tag(name = "Organizations")
+@RequiredArgsConstructor
 public class OrganizationController {
 
     private final OrganizationService organizationService;
-
-    public OrganizationController(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
 
     @GetMapping
     @Operation(summary = "List organizations", description = "SUPER_ADMIN only.")

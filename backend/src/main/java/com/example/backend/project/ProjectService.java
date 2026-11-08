@@ -10,6 +10,7 @@ import com.example.backend.project.ProjectStatus;
 import com.example.backend.project.Project;
 import com.example.backend.project.ProjectRepository;
 import com.example.backend.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -20,17 +21,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final PermissionService permissions;
     private final AuditService auditService;
-
-    public ProjectService(ProjectRepository projectRepository, PermissionService permissions, AuditService auditService) {
-        this.projectRepository = projectRepository;
-        this.permissions = permissions;
-        this.auditService = auditService;
-    }
 
     @Transactional(readOnly = true)
     public PageResponse<ProjectResponse> list(UUID requestedOrganizationId, int page, int size) {

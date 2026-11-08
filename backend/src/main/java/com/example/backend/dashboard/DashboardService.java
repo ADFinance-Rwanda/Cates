@@ -8,6 +8,7 @@ import com.example.backend.task.TaskStatus;
 import com.example.backend.task.TaskRepository;
 import com.example.backend.task.TaskRepository.DayCount;
 import com.example.backend.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class DashboardService {
 
     private static final int TREND_DAYS = 14;
@@ -28,12 +30,6 @@ public class DashboardService {
     private final TaskRepository taskRepository;
     private final PermissionService permissions;
     private final DashboardCache dashboardCache;
-
-    public DashboardService(TaskRepository taskRepository, PermissionService permissions, DashboardCache dashboardCache) {
-        this.taskRepository = taskRepository;
-        this.permissions = permissions;
-        this.dashboardCache = dashboardCache;
-    }
 
     @Transactional(readOnly = true)
     public DashboardResponse get() {

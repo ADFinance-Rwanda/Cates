@@ -9,6 +9,7 @@ import com.example.backend.task.TaskStatus;
 import com.example.backend.task.TaskService;
 import com.example.backend.task.TaskService.CreateResult;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -37,13 +38,10 @@ import java.util.UUID;
 @Profile("api")
 @RequestMapping("/api/tasks")
 @Tag(name = "Tasks")
+@RequiredArgsConstructor
 public class TaskController {
 
     private final TaskService taskService;
-
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
 
     @GetMapping
     @Operation(summary = "List tasks in the caller's organization")

@@ -12,6 +12,7 @@ import com.example.backend.user.User;
 import com.example.backend.membership.MembershipRepository;
 import com.example.backend.user.UserRepository;
 import com.example.backend.security.CurrentUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,24 +22,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class MembershipService {
 
     private final MembershipRepository memberRepository;
     private final UserRepository userRepository;
     private final PermissionService permissions;
     private final AuditService auditService;
-
-    public MembershipService(
-            MembershipRepository memberRepository,
-            UserRepository userRepository,
-            PermissionService permissions,
-            AuditService auditService
-    ) {
-        this.memberRepository = memberRepository;
-        this.userRepository = userRepository;
-        this.permissions = permissions;
-        this.auditService = auditService;
-    }
 
     @Transactional(readOnly = true)
     public List<MemberResponse> list() {

@@ -22,6 +22,7 @@ import com.example.backend.project.ProjectRepository;
 import com.example.backend.task.TaskRepository;
 import com.example.backend.security.CurrentUser;
 import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -43,6 +44,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class TaskService {
 
     private final TaskRepository taskRepository;
@@ -54,28 +56,6 @@ public class TaskService {
     private final OutboxService outboxService;
     private final DashboardCache dashboardCache;
     private final EntityManager entityManager;
-
-    public TaskService(
-            TaskRepository taskRepository,
-            ProjectRepository projectRepository,
-            IdempotencyService idempotencyService,
-            MembershipRepository memberRepository,
-            PermissionService permissions,
-            AuditService auditService,
-            OutboxService outboxService,
-            DashboardCache dashboardCache,
-            EntityManager entityManager
-    ) {
-        this.taskRepository = taskRepository;
-        this.projectRepository = projectRepository;
-        this.idempotencyService = idempotencyService;
-        this.memberRepository = memberRepository;
-        this.permissions = permissions;
-        this.auditService = auditService;
-        this.outboxService = outboxService;
-        this.dashboardCache = dashboardCache;
-        this.entityManager = entityManager;
-    }
 
     @Transactional(readOnly = true)
     public PageResponse<TaskResponse> list(

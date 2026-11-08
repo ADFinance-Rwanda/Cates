@@ -3,8 +3,8 @@ package com.example.backend.worker;
 import com.example.backend.task.Task;
 import com.example.backend.task.TaskRepository;
 import com.example.backend.worker.OutboxService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,17 +16,12 @@ import java.util.Map;
 
 @Service
 @Profile("worker")
+@RequiredArgsConstructor
+@Slf4j
 public class DueSoonScheduler {
-
-    private static final Logger log = LoggerFactory.getLogger(DueSoonScheduler.class);
 
     private final TaskRepository taskRepository;
     private final OutboxService outboxService;
-
-    public DueSoonScheduler(TaskRepository taskRepository, OutboxService outboxService) {
-        this.taskRepository = taskRepository;
-        this.outboxService = outboxService;
-    }
 
     @Transactional
     public int enqueueDueSoon() {

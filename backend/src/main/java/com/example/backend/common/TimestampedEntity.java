@@ -4,10 +4,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+import lombok.*;
 
 import java.time.Instant;
 
 @MappedSuperclass
+@Getter
+@Setter
 public abstract class TimestampedEntity {
 
     @Column(name = "created_at", nullable = false)
@@ -28,21 +31,5 @@ public abstract class TimestampedEntity {
     @PreUpdate
     void onUpdate() {
         updatedAt = Instant.now();
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

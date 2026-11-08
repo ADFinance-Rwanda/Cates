@@ -1,22 +1,18 @@
 package com.example.backend.worker;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 @Profile("worker")
+@RequiredArgsConstructor
 public class WorkerLoop {
 
     private final BackgroundJobService jobProcessor;
     private final DueSoonScheduler dueSoonScheduler;
     private final IdempotencyPurgeJob idempotencyPurgeJob;
-
-    public WorkerLoop(BackgroundJobService jobProcessor, DueSoonScheduler dueSoonScheduler, IdempotencyPurgeJob idempotencyPurgeJob) {
-        this.jobProcessor = jobProcessor;
-        this.dueSoonScheduler = dueSoonScheduler;
-        this.idempotencyPurgeJob = idempotencyPurgeJob;
-    }
 
     @Scheduled(fixedDelayString = "${app.worker.poll-delay-ms:5000}")
     public void pollOutbox() {
