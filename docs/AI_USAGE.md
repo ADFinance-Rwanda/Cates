@@ -13,6 +13,7 @@ The assistant drafted the Java API, the Angular screens, the Keycloak login them
 1. Build a production-oriented, Dockerized, secure multi-tenant project and task platform. Do not change files yet. Plan it.
 2. Implement the approved plan: one shared database, Keycloak for who the person is, PostgreSQL for what they may do, Redis as a helper, Angular screens, tests, and notes for someone operating it.
 3. The signed-in pages do not match the provided layout, and they are not using the green palette. Restyle the shell, dashboard, and project, task, and member screens, then rebuild the frontend.
+4. Use Lombok where it applies. I did not agree with some of the backend implementation because it had more boilerplate.
 
 ## AI Code You Rejected
 
@@ -27,6 +28,12 @@ The assistant drafted the Java API, the Angular screens, the Keycloak login them
 **What we did instead:** the company is loaded from the person's membership after the login proof is checked.
 
 **Why:** someone at Meridian could pass Northline's id and read that company. A mismatched company id is refused. An id that belongs to the other company looks like it does not exist. Naming a company in a header works only for the platform owner.
+
+**Suggested:** some backend classes with more boilerplate than they needed.
+
+**What I proposed instead:** use Lombok where it applies.
+
+**Why:** I did not agree with that implementation because it had more boilerplate. Annotations such as `@Getter`, `@Setter`, `@RequiredArgsConstructor`, and `@Slf4j` cover those classes.
 
 **Suggested:** the first time a Keycloak user calls the API, create their membership automatically.
 
