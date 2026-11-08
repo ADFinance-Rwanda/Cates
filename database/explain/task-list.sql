@@ -1,5 +1,4 @@
 -- Filtered task list used by GET /api/tasks?status=TODO
--- Run against the application database after it has enough rows to matter.
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT id, title, status, priority, created_at
 FROM tasks

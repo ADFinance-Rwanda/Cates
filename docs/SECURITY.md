@@ -4,7 +4,7 @@
 
 Keycloak's login world, named `taskflow`, is the only place that issues a proof of identity. The screen's client is `taskflow-spa`. It is public, which means the browser does not hold a password for the API. Each login also uses PKCE, so a copied redirect link is not enough to finish sign-in. People can only be sent back to `http://localhost:4200`. The proof says it was issued by `http://localhost:8081/realms/taskflow` and that it is meant for `taskflow-api`.
 
-The API refuses a proof from the wrong place, meant for something else, badly signed, or expired. It does not use cookies, so the usual cookie-forgery protection is turned off. The browser is only allowed to call the API from `http://localhost:4200`, unless that list is changed with `APP_CORS_ALLOWED_ORIGINS`.
+The API refuses a proof from the wrong place, meant for something else, badly signed, or expired. The browser is only allowed to call the API from `http://localhost:4200`, unless that list is changed with `APP_CORS_ALLOWED_ORIGINS`.
 
 Log out drops the proof in the browser and ends the Keycloak session.
 
@@ -65,7 +65,7 @@ Creates, updates, deletes, and role changes write an audit row in the same save 
 
 ## Security assumptions
 
-- The ports stay on this computer. The clickable API page is open for that reason, and it must be turned off before anyone else can reach the API.
+- The ports stay on this computer. http://localhost:8082/swagger-ui.html is open for that reason, and it must be turned off before anyone else can reach the API.
 - The demo password is acceptable only inside this login import.
 - Separation is enforced in the API and by database links. This version does not add a second database policy on every row. A forgotten company filter would leak data, which is why the tests try to read across companies.
 - If Redis is down, the speed limit pauses until it returns.

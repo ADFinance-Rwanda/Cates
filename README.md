@@ -40,7 +40,7 @@ The first start takes a minute. Keycloak imports the demo users before the sign-
 | What | Address |
 |---|---|
 | The app. Start here and sign in. | http://localhost:4200 |
-| The API guide you can click through | http://localhost:8082/swagger-ui.html |
+| http://localhost:8082/swagger-ui.html | http://localhost:8082/swagger-ui.html |
 | "Is the API process up?" | http://localhost:8082/health |
 | "Can the API reach the database?" | http://localhost:8082/ready |
 | The sign-in service, if you want to open it directly | http://localhost:8081 |
@@ -114,23 +114,10 @@ Restore prints how many organizations and tasks came back. How often to back up,
 
 ## Known limitations
 
-An ordinary person belongs to one company. Assignment notices are written to the log, not sent as email. There is one database, one Keycloak, and no metrics dashboard. The clickable API page is open on this machine. Those are written down on purpose, not forgotten.
+An ordinary person belongs to one company. Assignment notices are written to the log, not sent as email. There is one database, one Keycloak, and no metrics dashboard.
 
 ## Walkthrough
 
-The short tour, with screenshots and logs, is [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md). On this machine:
-
-1. Open http://localhost:4200 and sign in as `alice`. The header shows Meridian and `ORG_ADMIN`.
-2. Sign in as `cara`. The delete button is hidden. Deleting a task through the API is still refused.
-3. As `alice`, open a Meridian task, change the title, and save. In a second tab, save the old copy without reloading. The second save is rejected because someone already changed that task.
-4. Create a task. The browser sends a one-time key with it. Sending that same key and the same task again returns the original task. The same key with a different task is rejected.
-5. Sign in as `dave` and open a task link copied from Meridian. The API says it is not found. Alice gets the same answer for a Northline task.
-6. As `superadmin`, pick Northline. Later calls name that company. Without a choice, company calls are refused.
-7. Dashboard numbers come from the database and are remembered for 60 seconds. Saving a task makes the next dashboard read fresh.
-8. More than 60 task or member changes in 60 seconds are told to wait. If Redis is stopped, those changes still succeed. The API stays ready as long as the database is up.
-9. Assign a task and read the worker logs. The notice is delivered once. A job that keeps failing is marked dead after five tries, and a copy is set aside.
-10. Alice can read the audit list. Cara cannot. The database itself refuses any attempt to edit or delete an audit row.
-11. Run the tests named above.
-12. Run a backup, then a restore, and compare the task count.
+The short tour, with screenshots and logs, is [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md). 
 
 Other notes: [docs/SECURITY.md](docs/SECURITY.md), [docs/DATABASE.md](docs/DATABASE.md), [docs/AI_USAGE.md](docs/AI_USAGE.md), [docs/ADR](docs/ADR). The assessment brief is [docs/ASSESSMENT.md](docs/ASSESSMENT.md).
