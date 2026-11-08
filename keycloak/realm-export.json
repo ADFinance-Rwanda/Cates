@@ -31,16 +31,14 @@
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "redirectUris": [
-        "http://localhost:4200/*",
-        "https://adfinance-rwanda-cates-web.onrender.com/*"
+        "http://localhost:4200/*"
       ],
       "webOrigins": [
-        "http://localhost:4200",
-        "https://adfinance-rwanda-cates-web.onrender.com"
+        "http://localhost:4200"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://localhost:4200/*##https://adfinance-rwanda-cates-web.onrender.com/*"
+        "post.logout.redirect.uris": "http://localhost:4200/*"
       },
       "fullScopeAllowed": true,
       "protocolMappers": [
@@ -72,7 +70,7 @@
   ],
   "users": [
     {
-      "id": "11111111-1111-1111-1111-111111111111",
+      "id": "4809e900-e596-47bb-9f2d-9225536bd8a6",
       "username": "superadmin",
       "email": "superadmin@taskflow.test",
       "emailVerified": true,
@@ -83,43 +81,43 @@
       "credentials": [{ "type": "password", "value": "password", "temporary": false }]
     },
     {
-      "id": "22222222-2222-2222-2222-222222222222",
+      "id": "21b9a0ed-3d21-46ff-8bc4-83225f36dfa4",
       "username": "alice",
-      "email": "alice@acme.test",
+      "email": "alice@meridian.test",
       "emailVerified": true,
       "enabled": true,
       "firstName": "Alice",
-      "lastName": "Acme",
+      "lastName": "Moreau",
       "credentials": [{ "type": "password", "value": "password", "temporary": false }]
     },
     {
-      "id": "33333333-3333-3333-3333-333333333333",
+      "id": "d6773c12-5e75-4741-8913-36bb8a0e46cc",
       "username": "bob",
-      "email": "bob@acme.test",
+      "email": "bob@meridian.test",
       "emailVerified": true,
       "enabled": true,
       "firstName": "Bob",
-      "lastName": "Acme",
+      "lastName": "Keller",
       "credentials": [{ "type": "password", "value": "password", "temporary": false }]
     },
     {
-      "id": "44444444-4444-4444-4444-444444444444",
+      "id": "30fc848c-06c5-4ef3-95e9-44bb31ed6b3c",
       "username": "cara",
-      "email": "cara@acme.test",
+      "email": "cara@meridian.test",
       "emailVerified": true,
       "enabled": true,
       "firstName": "Cara",
-      "lastName": "Acme",
+      "lastName": "Nunez",
       "credentials": [{ "type": "password", "value": "password", "temporary": false }]
     },
     {
-      "id": "55555555-5555-5555-5555-555555555555",
+      "id": "d79a9fb0-750b-47d5-9c19-95a92a7eb9da",
       "username": "dave",
-      "email": "dave@globex.test",
+      "email": "dave@northline.test",
       "emailVerified": true,
       "enabled": true,
       "firstName": "Dave",
-      "lastName": "Globex",
+      "lastName": "Okonkwo",
       "credentials": [{ "type": "password", "value": "password", "temporary": false }]
     }
   ]

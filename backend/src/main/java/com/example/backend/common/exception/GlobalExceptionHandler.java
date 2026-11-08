@@ -82,8 +82,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleIntegrity(DataIntegrityViolationException exception) {
         log.warn("data_integrity_violation");
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(body("CONFLICT", "The request conflicts with existing data", Map.of()));
+        String cause = exception.getMostSpecificCause().getMessage();
+        String message = cause != null && cause.contains("organizations_name_lower_idx")
+                ? "An organization with that name already exists"
+                : "The request conflicts with existing data";
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body("CONFLICT", message, Map.of()));
     }
 
     @ExceptionHandler(Exception.class)

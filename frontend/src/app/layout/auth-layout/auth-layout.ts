@@ -82,6 +82,10 @@ export class AuthLayout {
 
   protected signIn(): void {
     this.error.set('');
-    void this.auth.login();
+    void this.auth.login().then(() => {
+      if (this.auth.setupError()) {
+        this.error.set(this.auth.setupError());
+      }
+    });
   }
 }

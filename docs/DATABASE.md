@@ -1,10 +1,12 @@
 # Database
 
-Flyway owns the schema. Hibernate `ddl-auto` is `validate`. Migrations are `V1__create_users.sql` through `V5__create_tasks.sql`, then `V6__create_audit_idempotency_and_jobs.sql`. Demo organizations, users, projects, and tasks are `V7__seed_demo_data.sql`.
+The shape of the database lives in versioned SQL files. They run in order the first time the database is empty, and again only when a new file appears. The application checks that the tables match those files. It does not invent or alter tables on its own.
+
+The files are `V1__create_users.sql` through `V5__create_tasks.sql`, then `V6__create_audit_idempotency_and_jobs.sql`. Demo companies, people, projects, and tasks are `V7__seed_demo_data.sql`.
 
 ## Entity relationships
 
-An organization has many projects and many members. A user has at most one membership. A project belongs to one organization and has many tasks. A task belongs to one project and one organization, has an owner, and may have an assignee. Idempotency keys, audit rows, and outbox jobs point at the organization and the entity they record.
+A company has many projects and many members. A person has at most one membership. A project belongs to one company and has many tasks. A task belongs to one project and one company, has an owner, and may have someone assigned. One-time create keys, audit rows, and background jobs point at the company and at the thing they record.
 
 ```text
 organizations
@@ -18,60 +20,60 @@ job_outbox ── notification_deliveries
 
 ## Important tables
 
-- `organizations` — name unique case-insensitively, status `ACTIVE` or `SUSPENDED`.
-- `users` — `keycloak_sub` unique. Email unique case-insensitively. No foreign key to an organization.
-- `organization_members` — one row per user (`UNIQUE(user_id)`), role `ORG_ADMIN`, `PROJECT_MANAGER`, or `MEMBER`.
-- `projects` — unique `(id, organization_id)` so tasks can use a composite foreign key. Unique `(organization_id, name)`.
-- `tasks` — status and priority checks, `version` for optimistic locking, composite foreign key `(project_id, organization_id)`.
-- `task_idempotency_keys` — unique `(organization_id, user_id, idempotency_key)`, `request_hash` varchar(64).
-- `audit_logs` — append-only. Trigger `audit_logs_append_only` raises on update or delete.
-- `job_outbox` — `PENDING`, `DONE`, or `DEAD`.
-- `notification_deliveries` — primary key `outbox_id`, so a retried notification is a no-op.
+- `organizations` — the company. The name is unique even if the letters change case. Status is `ACTIVE` or `SUSPENDED`.
+- `users` — the person. Their Keycloak id is unique. Email is unique ignoring case. A user row does not itself belong to a company.
+- `organization_members` — one row per person, so a normal user cannot be in two companies. The role is company admin, project manager, or member.
+- `projects` — the pair of project id and company id is unique, so a task can be tied to both. Inside one company, project names are unique.
+- `tasks` — status and priority are limited to known values. `version` goes up on every successful edit, so two people cannot silently overwrite each other. The task's project must belong to the same company.
+- `task_idempotency_keys` — remembers a create so a retry does not make a second task. Unique per company, person, and key.
+- `audit_logs` — a history that can only grow. A database rule rejects any attempt to change or delete a row.
+- `job_outbox` — work waiting to be done. Status is `PENDING`, `DONE`, or `DEAD`.
+- `notification_deliveries` — one row per job, so a retry does not send the same notice twice.
 
 ## Indexes
 
-Tenant filters lead with `organization_id`. Extra single-column indexes on `status` or `created_at` were skipped because they would mix every tenant and because those columns are already the second part of a composite.
+An index is a shortcut the database uses so it does not read every row. These shortcuts all start with the company id, so one company's tasks are not mixed with everyone else's. A shortcut on status alone, or on date alone, was skipped because it would mix every company, and those columns are already the second part of a company shortcut.
 
 | Index | Query |
 |---|---|
-| `tasks_org_created_idx (organization_id, created_at DESC)` | Default task list |
-| `tasks_org_project_idx (organization_id, project_id)` | Project board |
-| `tasks_org_status_idx (organization_id, status)` | Status filter and dashboard |
-| `tasks_org_assignee_idx (organization_id, assignee_id)` | Assignee filter |
-| `tasks_org_due_idx (organization_id, due_date) WHERE due_date IS NOT NULL` | Overdue and reminders |
-| `audit_logs_org_created_idx (organization_id, created_at DESC)` | Audit list |
-| `users_email_lower_idx` | Invite by email |
-| `job_outbox_pending_idx (status, available_at)` | Worker poll |
+| `tasks_org_created_idx` on company, then newest first | The default task list |
+| `tasks_org_project_idx` on company and project | A project's tasks |
+| `tasks_org_status_idx` on company and status | Filtering by status, and the dashboard counts |
+| `tasks_org_assignee_idx` on company and assignee | "My tasks" |
+| `tasks_org_due_idx` on company and due date, only when a due date exists | Overdue tasks and reminders |
+| `audit_logs_org_created_idx` on company, then newest first | The audit list |
+| `users_email_lower_idx` | Finding a person by email when adding a member |
+| `job_outbox_pending_idx` on status and when the job may run | The worker looking for waiting jobs |
 
 ## Constraints
 
-- Status and priority values are `CHECK` constraints, not free text.
-- `organization_members.user_id` is unique, so an ordinary user cannot belong to two organizations.
-- `projects (id, organization_id)` is unique so the task foreign key can include the organization.
-- `tasks (project_id, organization_id)` references `projects (id, organization_id)`. A task in Acme cannot point at a Globex project.
-- `task_idempotency_keys (organization_id, user_id, idempotency_key)` is unique.
-- `notification_deliveries.outbox_id` is the primary key.
-- `audit_logs` has a `BEFORE UPDATE OR DELETE` trigger, `taskflow_reject_audit_mutation`, which raises `audit_logs is append-only`.
+- Status and priority have to be one of the known words. Free text is rejected.
+- A person can appear only once in `organization_members`.
+- A project is unique as the pair of its id and its company, so a task can require both.
+- A task's project and company must match a real project in that same company. A Meridian task cannot point at a Northline project.
+- A one-time create key is unique for that company, that person, and that key.
+- A delivery row's id is the job id, so there can be only one delivery per job.
+- `audit_logs` has a trigger named `taskflow_reject_audit_mutation`. Updating or deleting a row raises `audit_logs is append-only`.
 
 ## Transactions
 
-Creating a task inserts the task, the idempotency row, the audit row, and any outbox row in one transaction. A concurrent duplicate takes a transaction-scoped advisory lock, then reads the winner. Updating a task compares `version` in that same transaction. Zero rows means 409 `STALE_VERSION`. If the transaction rolls back, the audit row rolls back with it. User provisioning uses a separate transaction so a failed membership lookup does not undo the user upsert.
+Creating a task writes the task, the one-time key, the audit row, and any background job in one save. If any part fails, none of it is kept. Two creates arriving at the same moment with the same key take a short lock, then the second one reads the row the first one saved. Updating a task only succeeds if the version still matches. If it does not, the answer is `409 STALE_VERSION`. If the save is undone, the audit row is undone with it. Saving a brand-new person uses its own save, so a failed membership lookup does not forget that the person exists.
 
 ## Performance considerations
 
-`database/explain/task-list.sql` is the status filter used by `GET /api/tasks?status=TODO` for Acme, ordered by `created_at DESC`. Captured on the seed database (three Acme tasks) after `docker compose up`:
+`database/explain/task-list.sql` is the question the task list asks: Meridian's tasks that are still to do, newest first. It was run on the demo database, which has three Meridian tasks.
 
-The list query uses `tasks_org_created_idx` whether or not `tasks_org_status_idx` exists. That is the right index for this sort: the condition is `organization_id`, the order is `created_at DESC`, and `status` is a filter. On the seed data the filter removed 2 rows. Execution was about 0.06 ms. A sequential scan was not chosen.
+The list uses `tasks_org_created_idx`. That is the right shortcut, because the company is the main condition and the list is ordered by newest first. Status is an extra filter. On the demo data that filter skipped 2 rows. The database took about 0.06 ms and did not read the whole table.
 
 ```text
 Limit
   -> Index Scan using tasks_org_created_idx on tasks
-       Index Cond: (organization_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+       Index Cond: (organization_id = 'c2f0c8b6-ab19-475e-ae57-09a4c2c329b6')
        Filter: (status = 'TODO')
        Rows Removed by Filter: 2
 ```
 
-`tasks_org_status_idx` is the right index when the query does not need `created_at` order (dashboard counts, status-only filters). With the other task indexes dropped inside a transaction that was rolled back, the same list query used it and then sorted:
+`tasks_org_status_idx` is the right shortcut when the question does not need newest-first order, such as dashboard counts. With the other task shortcuts temporarily removed, the same list used the status shortcut and then sorted:
 
 ```text
 Limit
@@ -80,4 +82,4 @@ Limit
             Index Cond: (organization_id = '...' AND status = 'TODO')
 ```
 
-Re-run the script once an organization has thousands of tasks. At that size, confirm the planner still prefers `tasks_org_created_idx` for the default list and `tasks_org_status_idx` for status aggregates. Lists are paginated, default 20 rows, maximum 100, so a request cannot scan an unbounded result into memory.
+Run the script again once a company has thousands of tasks, and check that the newest-first list still prefers `tasks_org_created_idx` and the counts still prefer `tasks_org_status_idx`. Lists return 20 rows by default and never more than 100, so one request cannot pull an unlimited result into memory.

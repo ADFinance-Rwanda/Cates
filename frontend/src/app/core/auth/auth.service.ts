@@ -30,8 +30,14 @@ export class AuthService {
   }
 
   async login(): Promise<void> {
+    if (this.setupError()) {
+      this.initPromise = null;
+      this.setupError.set('');
+    }
     await this.init();
-    this.oauth.initCodeFlow();
+    if (!this.setupError()) {
+      this.oauth.initCodeFlow();
+    }
   }
 
   logout(): void {
@@ -47,27 +53,21 @@ export class AuthService {
   }
 
   private async doInit(): Promise<void> {
-    const config = authConfig();
-    try {
-      const remote = await firstValueFrom(this.http.get<{ issuer?: string; clientId?: string }>('/config.json'));
-      if (remote.issuer) {
-        config.issuer = remote.issuer;
+    this.oauth.configure(authConfig());
+    for (let attempt = 0; attempt < 30; attempt++) {
+      try {
+        await this.oauth.loadDiscoveryDocumentAndTryLogin();
+        this.setupError.set('');
+        if (this.oauth.hasValidAccessToken()) {
+          await this.refreshMe();
+        }
+        return;
+      } catch {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
-      if (remote.clientId) {
-        config.clientId = remote.clientId;
-      }
-    } catch {
-      // ng serve has no generated file. environment.ts stays the issuer.
     }
-    this.oauth.configure(config);
-    try {
-      await this.oauth.loadDiscoveryDocumentAndTryLogin();
-      if (this.oauth.hasValidAccessToken()) {
-        await this.refreshMe();
-      }
-    } catch {
-      this.setupError.set('The sign-in service is not reachable. Wait a moment and try again.');
-    }
+    this.setupError.set('The sign-in service is not reachable. Wait a moment and try again.');
+    this.initPromise = null;
   }
 
   async refreshMe(): Promise<void> {

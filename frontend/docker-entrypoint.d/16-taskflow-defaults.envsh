@@ -1,4 +1,2 @@
 export PORT="${PORT:-8080}"
 export API_UPSTREAM="${API_UPSTREAM:-http://backend:8082}"
-export KEYCLOAK_ISSUER="${KEYCLOAK_ISSUER:-http://localhost:8081/realms/taskflow}"
-export KEYCLOAK_CLIENT_ID="${KEYCLOAK_CLIENT_ID:-taskflow-spa}"

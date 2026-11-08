@@ -1,6 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
-import { Organization } from '../models/organization.model';
 import { OrganizationService } from '../services/organization.service';
 
 @Component({
@@ -11,7 +10,7 @@ import { OrganizationService } from '../services/organization.service';
         Organization
         <select [value]="auth.selectedOrgId() || ''" (change)="onOrg($event)">
           <option value="">Select</option>
-          @for (org of organizations(); track org.id) {
+          @for (org of organizations.organizations(); track org.id) {
             <option [value]="org.id">{{ org.name }}</option>
           }
         </select>
@@ -21,16 +20,14 @@ import { OrganizationService } from '../services/organization.service';
 })
 export class OrganizationSwitcher {
   protected readonly auth = inject(AuthService);
-  private readonly organizationsApi = inject(OrganizationService);
-  protected readonly organizations = signal<Organization[]>([]);
+  protected readonly organizations = inject(OrganizationService);
 
   constructor() {
-    if (this.auth.me()?.superAdmin) {
-      this.organizationsApi.list().subscribe({
-        next: (orgs) => this.organizations.set(orgs),
-        error: () => this.organizations.set([])
-      });
-    }
+    effect(() => {
+      if (this.auth.me()?.superAdmin) {
+        this.organizations.load();
+      }
+    });
   }
 
   protected onOrg(event: Event): void {

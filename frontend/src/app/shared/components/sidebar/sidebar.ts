@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { canManageMembers } from '../../../core/auth/access';
+import { canManageMembers, canManageOrganizations, canReadAudit } from '../../../core/auth/access';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,11 +16,17 @@ import { canManageMembers } from '../../../core/auth/access';
         </span>
       </div>
       <nav aria-label="Primary">
+        @if (canManageOrganizations(auth.me())) {
+          <a routerLink="/organizations" routerLinkActive="active">Organizations</a>
+        }
         <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a routerLink="/projects" routerLinkActive="active">Projects</a>
         <a routerLink="/tasks" routerLinkActive="active">Tasks</a>
         @if (canManageMembers(auth.me())) {
           <a routerLink="/members" routerLinkActive="active">Members</a>
+        }
+        @if (canReadAudit(auth.me())) {
+          <a routerLink="/audit" routerLinkActive="active">Audit</a>
         }
       </nav>
     </aside>
@@ -29,4 +35,6 @@ import { canManageMembers } from '../../../core/auth/access';
 export class Sidebar {
   protected readonly auth = inject(AuthService);
   protected readonly canManageMembers = canManageMembers;
+  protected readonly canReadAudit = canReadAudit;
+  protected readonly canManageOrganizations = canManageOrganizations;
 }

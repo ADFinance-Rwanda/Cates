@@ -36,3 +36,11 @@ export function canManageMembers(me: Me | null): boolean {
   if (!me) return false;
   return me.superAdmin || me.role === 'ORG_ADMIN';
 }
+
+export function canReadAudit(me: Me | null): boolean {
+  return canManageMembers(me);
+}
+
+export function canManageOrganizations(me: Me | null): boolean {
+  return me?.superAdmin === true;
+}

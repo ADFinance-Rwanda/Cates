@@ -50,7 +50,7 @@ class WorkerTest extends AbstractIntegrationTest {
                 INSERT INTO job_outbox (
                     id, job_type, organization_id, entity_id, payload, status, attempts, available_at, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, '{}'::jsonb, 'PENDING', 0, now(), now(), now())
-                """, id, type, UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), UUID.randomUUID());
+                """, id, type, UUID.fromString("c2f0c8b6-ab19-475e-ae57-09a4c2c329b6"), UUID.randomUUID());
         return id;
     }
 

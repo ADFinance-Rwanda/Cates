@@ -26,7 +26,7 @@ class RateLimitTest extends ApiIntegrationTest {
             int status = mvc.perform(post("/api/tasks").with(jwt().jwt(token -> token.subject(CARA)))
                             .header("Idempotency-Key", "rate-" + UUID.randomUUID())
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("{\"projectId\":\"" + ACME_PROJECT + "\",\"title\":\"Rate " + UUID.randomUUID() + "\"}"))
+                            .content("{\"projectId\":\"" + MERIDIAN_PROJECT + "\",\"title\":\"Rate " + UUID.randomUUID() + "\"}"))
                     .andReturn()
                     .getResponse()
                     .getStatus();
@@ -41,7 +41,7 @@ class RateLimitTest extends ApiIntegrationTest {
         mvc.perform(post("/api/tasks").with(jwt().jwt(token -> token.subject(CARA)))
                         .header("Idempotency-Key", "rate-" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"projectId\":\"" + ACME_PROJECT + "\",\"title\":\"Rate blocked\"}"))
+                        .content("{\"projectId\":\"" + MERIDIAN_PROJECT + "\",\"title\":\"Rate blocked\"}"))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.error").value("RATE_LIMITED"));
     }

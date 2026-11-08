@@ -43,15 +43,15 @@ class PlatformApiTest extends ApiIntegrationTest {
     void authenticatedUserReceivesAuthorizationContext() throws Exception {
         mvc.perform(get("/api/me").with(user(ALICE)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("alice@acme.test"))
-                .andExpect(jsonPath("$.organizationName").value("Acme"))
+                .andExpect(jsonPath("$.email").value("alice@meridian.test"))
+                .andExpect(jsonPath("$.organizationName").value("Meridian"))
                 .andExpect(jsonPath("$.role").value("ORG_ADMIN"))
                 .andExpect(jsonPath("$.superAdmin").value(false));
     }
 
     @Test
     void memberCannotDeleteOrCreateProjects() throws Exception {
-        mvc.perform(delete("/api/tasks/" + ACME_TASK).with(user(CARA)))
+        mvc.perform(delete("/api/tasks/" + MERIDIAN_TASK).with(user(CARA)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("FORBIDDEN"));
         mvc.perform(post("/api/projects").with(user(CARA))
@@ -62,29 +62,29 @@ class PlatformApiTest extends ApiIntegrationTest {
 
     @Test
     void crossTenantTaskAccessIsNotFound() throws Exception {
-        mvc.perform(get("/api/tasks/" + GLOBEX_TASK).with(user(ALICE)))
+        mvc.perform(get("/api/tasks/" + NORTHLINE_TASK).with(user(ALICE)))
                 .andExpect(status().isNotFound());
-        mvc.perform(put("/api/tasks/" + GLOBEX_TASK).with(user(ALICE))
+        mvc.perform(put("/api/tasks/" + NORTHLINE_TASK).with(user(ALICE))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updateBody(GLOBEX_TASK, 0)))
+                        .content(updateBody(NORTHLINE_TASK, 0)))
                 .andExpect(status().isNotFound());
-        mvc.perform(delete("/api/tasks/" + GLOBEX_TASK).with(user(ALICE)))
+        mvc.perform(delete("/api/tasks/" + NORTHLINE_TASK).with(user(ALICE)))
                 .andExpect(status().isNotFound());
-        mvc.perform(get("/api/projects/77777777-7777-7777-7777-777777777777").with(user(ALICE)))
+        mvc.perform(get("/api/projects/" + NORTHLINE_PROJECT).with(user(ALICE)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void clientSuppliedOrganizationIdCannotCrossTenants() throws Exception {
-        mvc.perform(get("/api/tasks").param("organization_id", GLOBEX).with(user(ALICE)))
+        mvc.perform(get("/api/tasks").param("organization_id", NORTHLINE).with(user(ALICE)))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("FORBIDDEN"));
 
-        mvc.perform(get("/api/tasks").header("X-Organization-Id", GLOBEX).with(user(ALICE)))
+        mvc.perform(get("/api/tasks").header("X-Organization-Id", NORTHLINE).with(user(ALICE)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[?(@.title == 'Export legacy invoices')]").isEmpty());
 
-        mvc.perform(get("/api/tasks/" + GLOBEX_TASK).header("X-Organization-Id", GLOBEX).with(user(ALICE)))
+        mvc.perform(get("/api/tasks/" + NORTHLINE_TASK).header("X-Organization-Id", NORTHLINE).with(user(ALICE)))
                 .andExpect(status().isNotFound());
     }
 
@@ -93,7 +93,7 @@ class PlatformApiTest extends ApiIntegrationTest {
         mvc.perform(get("/api/tasks").with(superAdmin()))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.error").value("TENANT_REQUIRED"));
-        mvc.perform(get("/api/tasks/" + GLOBEX_TASK).header("X-Organization-Id", GLOBEX).with(superAdmin()))
+        mvc.perform(get("/api/tasks/" + NORTHLINE_TASK).header("X-Organization-Id", NORTHLINE).with(superAdmin()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Export legacy invoices"));
         mvc.perform(get("/api/organizations").with(user(ALICE)))
@@ -112,7 +112,7 @@ class PlatformApiTest extends ApiIntegrationTest {
         mvc.perform(get("/api/tasks/" + id).with(user(ALICE)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value(title))
-                .andExpect(jsonPath("$.organizationId").value(ACME));
+                .andExpect(jsonPath("$.organizationId").value(MERIDIAN));
 
         mvc.perform(get("/api/tasks").param("q", title).with(user(ALICE)))
                 .andExpect(status().isOk())
@@ -121,7 +121,7 @@ class PlatformApiTest extends ApiIntegrationTest {
         mvc.perform(post("/api/tasks").with(user(ALICE))
                         .header("Idempotency-Key", "invalid-" + UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"projectId\":\"" + ACME_PROJECT + "\"}"))
+                        .content("{\"projectId\":\"" + MERIDIAN_PROJECT + "\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.details.title").exists());
@@ -195,7 +195,7 @@ class PlatformApiTest extends ApiIntegrationTest {
 
     @Test
     void memberCannotUpdateSomeoneElsesTask() throws Exception {
-        mvc.perform(get("/api/tasks/" + ACME_TASK).with(user(CARA)))
+        mvc.perform(get("/api/tasks/" + MERIDIAN_TASK).with(user(CARA)))
                 .andExpect(status().isOk());
         JsonNode ownedByBob = createTask(BOB, "Bob only " + UUID.randomUUID(), "bob-" + UUID.randomUUID());
         mvc.perform(put("/api/tasks/" + ownedByBob.get("id").asText()).with(user(CARA))
@@ -235,7 +235,7 @@ class PlatformApiTest extends ApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.scope").value("ASSIGNED"));
 
-        Set<String> keys = redis.keys("dashboard:" + ACME + ":" + ALICE + ":*");
+        Set<String> keys = redis.keys("dashboard:" + MERIDIAN + ":" + ALICE + ":*");
         assertFalse(keys.isEmpty());
         String key = keys.iterator().next();
         String cached = """
@@ -306,7 +306,7 @@ class PlatformApiTest extends ApiIntegrationTest {
 
     private String taskBody(String title, String assigneeId) {
         String assignee = assigneeId == null ? "" : ",\"assigneeId\":\"" + assigneeId + "\"";
-        return "{\"projectId\":\"" + ACME_PROJECT + "\",\"title\":\"" + title + "\",\"priority\":\"LOW\"" + assignee + "}";
+        return "{\"projectId\":\"" + MERIDIAN_PROJECT + "\",\"title\":\"" + title + "\",\"priority\":\"LOW\"" + assignee + "}";
     }
 
     private String updateBody(String id, long version) throws Exception {
@@ -315,9 +315,9 @@ class PlatformApiTest extends ApiIntegrationTest {
 
     private String updateBody(String id, long version, String title) throws Exception {
         JsonNode current = objectMapper.readTree(mvc.perform(get("/api/tasks/" + id).with(superAdmin())
-                        .header("X-Organization-Id", ACME))
+                        .header("X-Organization-Id", MERIDIAN))
                 .andReturn().getResponse().getContentAsString());
-        String projectId = current.hasNonNull("projectId") ? current.get("projectId").asText() : ACME_PROJECT;
+        String projectId = current.hasNonNull("projectId") ? current.get("projectId").asText() : MERIDIAN_PROJECT;
         return objectMapper.writeValueAsString(Map.of(
                 "version", version,
                 "projectId", projectId,

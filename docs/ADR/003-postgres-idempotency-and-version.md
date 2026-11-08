@@ -6,30 +6,30 @@ Accepted
 
 ## Problem
 
-Clients retry `POST /api/tasks`. Two retries must not create two tasks. Two people must not silently overwrite the same task. Redis can disappear. Correctness cannot.
+People retry "create a task" when the network blinks. Two retries must not create two tasks. Two people must not silently overwrite the same task. Redis can disappear. The tasks still have to be right.
 
 ## Options considered
 
-- Store the idempotency key only in Redis. Fast, and wrong during a Redis outage: the retry inserts a second task.
-- Use `ETag` / `If-Match` without a version column. Equivalent idea, more awkward for the JSON API the SPA already sends.
-- Store the idempotency key in Postgres in the same transaction as the task, and require `version` on update.
+- Keep the one-time key only in Redis. Fast, and wrong when Redis is down: the retry inserts a second task.
+- Use a web cache header instead of a version number. Same idea, and clumsier for the JSON the screen already sends.
+- Store the one-time key in PostgreSQL in the same save as the task, and require the version number on update.
 
 ## Decision
 
-`POST /api/tasks` requires `Idempotency-Key`. In the same transaction as the insert, the API writes `task_idempotency_keys` with a SHA-256 of the canonical request. The unique key is `(organization_id, user_id, key)`. Concurrent duplicates take a transaction-scoped advisory lock, then read the winner.
+Creating a task requires a header called `Idempotency-Key`. In the same save as the task, the API writes a row with a fingerprint of the request. The key is unique for that company, that person, and that key. Two creates at the same moment take a short lock, then the second one reads the winner.
 
-- Same key and same hash: return the original task with `200` and `Idempotent-Replay: true`.
-- Same key and a different body: `409 IDEMPOTENCY_KEY_REUSED`.
+- Same key and the same task: return the original task, and say it was a replay.
+- Same key and a different body: reject it. The key was already used for something else.
 - Keys older than 24 hours are deleted by the worker.
 
-Task updates send `version`. The write is conditional on `id`, `organization_id`, and `version`. Zero rows is `409 STALE_VERSION`.
+Updates send `version`. The write only happens if the id, the company, and the version still match. If nothing was updated, the answer is `409 STALE_VERSION`.
 
-Audit rows are inserted in that same transaction. A database trigger rejects `UPDATE` and `DELETE` on `audit_logs`.
+The audit row is written in that same save. A database trigger refuses any later edit or delete of an audit row.
 
 ## Why
 
-The unique constraint and the task insert commit or roll back together. A Redis restart cannot duplicate a task. The version check is one conditional update, so the second editor gets a conflict instead of a silent overwrite.
+The unique key and the new task are saved together, or neither is saved. Restarting Redis cannot duplicate a task. The version check is one conditional update, so the second editor gets a conflict instead of a quiet overwrite.
 
 ## Trade-offs
 
-The client must keep the idempotency key for the retry window and must reload after 409. Postgres does extra writes on every create. Members can update a task they own or are assigned, but they cannot change `projectId` or `assigneeId`. That check is in the service, not only in the form.
+The screen has to keep the one-time key for the retry window, and it has to reload after a conflict. PostgreSQL does a little extra writing on every create. A member can update a task they own or are assigned, and they cannot change the project or the assignee. That check is in the service, not only in the form.

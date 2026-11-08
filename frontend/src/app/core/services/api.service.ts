@@ -7,6 +7,7 @@ import { Organization } from '../../features/organizations/models/organization.m
 import { Project } from '../../features/projects/models/project.model';
 import { Task } from '../../features/tasks/models/task.model';
 import { Member } from '../../features/users/models/member.model';
+import { AuditEntry } from '../../features/audit/models/audit.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -18,6 +19,14 @@ export class ApiService {
 
   organizations(): Observable<Organization[]> {
     return this.http.get<Organization[]>('/api/organizations');
+  }
+
+  createOrganization(name: string): Observable<Organization> {
+    return this.http.post<Organization>('/api/organizations', { name });
+  }
+
+  updateOrganization(id: string, body: { name: string; status: string }): Observable<Organization> {
+    return this.http.put<Organization>(`/api/organizations/${id}`, body);
   }
 
   projects(page = 0, size = 20): Observable<Page<Project>> {
@@ -76,5 +85,9 @@ export class ApiService {
 
   dashboard(): Observable<Dashboard> {
     return this.http.get<Dashboard>('/api/dashboard');
+  }
+
+  audit(page = 0, size = 20): Observable<Page<AuditEntry>> {
+    return this.http.get<Page<AuditEntry>>('/api/audit', { params: { page, size } });
   }
 }

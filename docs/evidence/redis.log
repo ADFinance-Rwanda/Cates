@@ -3,8 +3,8 @@ PONG
 dashboard keys: 2
 version keys: 1
 rate-limit keys: 3
-TTL dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = -1s
-GET dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = 6
-TTL dashboard:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa:22222222-2222-2222-2222-222222222222:ORGANIZATION:3 = 58s
-TTL dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = -1s
-GET dashboard:ver:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa = 6
+TTL dashboard:ver:c2f0c8b6-ab19-475e-ae57-09a4c2c329b6 = -1s
+GET dashboard:ver:c2f0c8b6-ab19-475e-ae57-09a4c2c329b6 = 6
+TTL dashboard:c2f0c8b6-ab19-475e-ae57-09a4c2c329b6:21b9a0ed-3d21-46ff-8bc4-83225f36dfa4:ORGANIZATION:3 = 58s
+TTL dashboard:ver:c2f0c8b6-ab19-475e-ae57-09a4c2c329b6 = -1s
+GET dashboard:ver:c2f0c8b6-ab19-475e-ae57-09a4c2c329b6 = 6
