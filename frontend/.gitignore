@@ -43,4 +43,5 @@ __screenshots__/
 .DS_Store
 Thumbs.db
 
-/src/environments/*
+# Local-only. Login settings used by the app live in src/app/core/auth/auth.config.ts.
+/src/environments/

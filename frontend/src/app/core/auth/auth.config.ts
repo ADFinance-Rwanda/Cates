@@ -1,12 +1,14 @@
 import { AuthConfig } from 'angular-oauth2-oidc';
-import { environment } from '../../../environments/environment';
+
+const issuer = 'http://localhost:8081/realms/taskflow';
+const clientId = 'taskflow-spa';
 
 export function authConfig(): AuthConfig {
   return {
-    issuer: environment.issuer,
+    issuer,
     redirectUri: window.location.origin + '/',
     postLogoutRedirectUri: window.location.origin + '/',
-    clientId: environment.clientId,
+    clientId,
     responseType: 'code',
     scope: 'openid profile email',
     requireHttps: false,
