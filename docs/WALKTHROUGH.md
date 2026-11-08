@@ -74,3 +74,53 @@ In `backend/`, `./mvnw test` runs the API against a real PostgreSQL and Redis st
 ## Docker
 
 `docker compose up --build` starts the stack.
+
+## Environment values
+
+Copy `.env.example` to `.env` and replace the three passwords. `.env` stays off Git. These are example values for this machine:
+
+```text
+POSTGRES_DB=taskflow
+POSTGRES_USER=taskflow_app
+POSTGRES_PASSWORD=change_this_local_password
+
+REDIS_PASSWORD=change_this_redis_password
+
+KEYCLOAK_DB=keycloak
+KEYCLOAK_DB_USER=keycloak_app
+KEYCLOAK_DB_PASSWORD=change_this_keycloak_db_password
+
+KEYCLOAK_ADMIN_USER=admin
+KEYCLOAK_ADMIN_PASSWORD=change_this_admin_password
+
+KEYCLOAK_URL=http://localhost:8081
+KEYCLOAK_REALM=taskflow
+KEYCLOAK_CLIENT_ID=taskflow-api
+KEYCLOAK_CLIENT_SECRET=local-dev-only-not-a-production-secret
+```
+
+Compose turns those into the names the API reads. Inside Docker the database host is `postgres` and Redis is `redis`. The browser still uses localhost.
+
+```text
+SPRING_PROFILES_ACTIVE=api
+SERVER_PORT=8082
+SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/taskflow
+SPRING_DATASOURCE_USERNAME=taskflow_app
+SPRING_DATASOURCE_PASSWORD=change_this_local_password
+SPRING_DATA_REDIS_HOST=redis
+SPRING_DATA_REDIS_PORT=6379
+SPRING_DATA_REDIS_PASSWORD=change_this_redis_password
+APP_SECURITY_ISSUER=http://localhost:8081/realms/taskflow
+APP_SECURITY_JWK_SET_URI=http://keycloak:8000/realms/taskflow/protocol/openid-connect/certs
+APP_SECURITY_AUDIENCE=taskflow-api
+APP_CORS_ALLOWED_ORIGINS=http://localhost:4200
+```
+
+The worker uses the same block with `SPRING_PROFILES_ACTIVE=worker` and `SERVER_PORT=8083`.
+
+The screen's login settings are constants in `frontend/src/app/core/auth/auth.config.ts`. `frontend/src/environments/` is ignored and the app does not read it.
+
+```text
+issuer=http://localhost:8081/realms/taskflow
+clientId=taskflow-spa
+```
