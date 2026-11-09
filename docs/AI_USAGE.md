@@ -41,8 +41,6 @@ The assistant drafted the Java API, the Angular screens, the Keycloak login them
 
 **Why:** being able to log in is not an invitation. Membership comes from the demo data or from an admin.
 
-Other generated code was changed after a real run failed. The JSON library class had moved in this version of Spring Boot. A 64-character hash column was declared too strictly for the database mapper. The Redis settings type had moved package. The test-database library names were the old ones, and Spring Boot already manages the current version.
-
 ## Verification
 
 `./mvnw test` in `backend/` runs the API against a real PostgreSQL and Redis started for the test. The tests cover a missing login, a role that is not allowed, reading another company's task, a faked company id, two editors saving at once, a repeated create, the dashboard cache, the speed limit, and a worker job that fails until it is set aside. `npx ng test --watch=false` covers the screen's role helpers. [docs/DATABASE.md](DATABASE.md) records what the database actually chose when listing tasks. The sign-in, dashboard, projects, tasks, and members screens were clicked in a browser against the running stack, not against a fake. `scripts/backup.sh` and `scripts/restore.sh` were run, and the task count matched.
