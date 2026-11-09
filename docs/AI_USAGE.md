@@ -2,7 +2,7 @@
 
 ## Tools Used
 
-Cursor, with Grok 4.7, was used to draft, debug, and try approaches. Generated code was read, run, and changed where it was wrong.
+Cursor and Grok 4.7 were used as development aids for implementation, debugging, and exploring technical approaches. Generated code and suggestions were reviewed, tested, and adjusted where necessary.
 
 ## Where AI Was Used
 

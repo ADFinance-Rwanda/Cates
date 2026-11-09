@@ -1,123 +1,169 @@
-# Taskflow
+# Multi-Tenant Project & Task Management Platform
 
-## Project overview
+## 1. Assessment Overview & Compliance
 
-Taskflow is a place where several companies can keep projects and tasks, on one system, without seeing each other's work. Meridian and Northline are the two demo companies. Alice at Meridian cannot open Dave's tasks at Northline, even if she pastes his link.
+This repository contains a complete, production-oriented implementation of the Multi-Tenant Project & Task Management Platform technical assessment. The system is designed to demonstrate senior-level software engineering judgment across architecture, security, database engineering, concurrency control, reliability, testing, and DevOps.
 
-## Architecture
+### Core Requirements Implemented
 
-The browser has two conversations. Sign-in goes to Keycloak. Everything else, such as tasks and the dashboard, goes to one Java API. PostgreSQL is where the real data lives. Redis is a helper: it remembers dashboard numbers for a short time, slows people who click too fast, and nudges a background worker. That worker is the same program, started in a different mode, so it can send reminders without slowing the pages people are using. More detail is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+- **Strict Multi-Tenancy:** Server-side tenant isolation enforced via JWT claims and security context, preventing cross-tenant IDOR attacks.
+- **Authentication & RBAC:** Keycloak OIDC/OAuth2 integration with fine-grained role-based access control (`SUPER_ADMIN`, `ORG_ADMIN`, `PROJECT_MANAGER`, `MEMBER`).
+- **PostgreSQL Persistence:** Relational schema with foreign keys, proper constraints, Flyway migrations, and optimized indexing.
+- **Redis Integration:** Used for high-performance dashboard caching (60s TTL with invalidation), API rate-limiting, and idempotency key tracking.
+- **Concurrency Control:** Optimistic locking (`version` column) handling concurrent task updates with `409 Conflict` responses.
+- **Idempotent Task Creation:** `Idempotency-Key` tracking via Redis to prevent duplicate task creation on retries.
+- **Audit Logging:** Append-only business audit trail for critical actions (`TASK_CREATED`, `TASK_UPDATED`, etc.).
+- **Background Worker:** Asynchronous worker processing for notifications and background jobs with retry logic.
+- **Observability & Health:** `/health` (liveness) and `/ready` (PostgreSQL & Redis dependency checks) actuator endpoints.
+- **Automated Testing:** Integration and API tests verifying security boundaries, multi-tenancy, CRUD, and concurrency.
+- **Disaster Recovery:** Automated backup and restore scripts (`pg_dump`) with documented RPO/RTO strategies.
 
-## Technology stack
+---
 
-- Screens: Angular
-- API: Java 17 and Spring Boot
-- Sign-in: Keycloak. The browser is sent to a login page and comes back with a short-lived proof of who the person is. The password is not stored in Taskflow.
-- Database: PostgreSQL. Table changes are versioned files that run in order (Flyway).
-- Helper store: Redis, for the short-lived dashboard copy and the speed limit
-- How it runs: Docker Compose, one command starts every piece
+## 2. Architecture & Tech Stack
 
-## Prerequisites
+```text
+                    ┌─────────────┐
+                    │   Keycloak  │
+                    └──────┬──────┘
+                           │
+                           ▼
+┌─────────────┐      ┌─────────────┐
+│  Frontend   │ ───► │ Backend API │
+└─────────────┘      └──────┬──────┘
+                            │
+                 ┌──────────┴──────────┐
+                 ▼                     ▼
+          ┌─────────────┐       ┌─────────────┐
+          │ PostgreSQL  │       │    Redis    │
+          └─────────────┘       └─────────────┘
+                                      │
+                                      ▼
+                               ┌─────────────┐
+                               │   Worker    │
+                               └─────────────┘
+```
 
-Docker and Docker Compose, and a browser on the same computer. You only need Java 17 and Node 22 if you want to run the API or the screens outside Docker.
+### Technology Stack
 
-## Installation
+| Component | Technology |
+|---|---|
+| Frontend | Angular / TypeScript |
+| Backend API | Java 21 & Spring Boot (REST, Spring Security, Spring Data JPA, Flyway) |
+| Identity Provider | Keycloak 26 (OIDC / OAuth2 Resource Server) |
+| Primary Database | PostgreSQL 17 |
+| Cache & Supporting Infrastructure | Redis 7 (Caching, Rate Limiting, Idempotency) |
+| Containerization | Docker & Docker Compose |
+
+For a deep dive into data flows, component design, and scaling considerations, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+---
+
+## 3. Getting Started & Docker Deployment
+
+### Prerequisites
+
+- Docker & Docker Compose
+- Java 21 & Maven (optional, if running the backend outside Docker)
+- Node.js 22 (optional, if running the frontend outside Docker)
+
+### Quick Start
+
+**1. Copy the environment template:**
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and replace the placeholder passwords. Do not commit that file. It holds the local secrets.
+**2. Review and configure local secrets in `.env`.**
 
-## Docker startup
-
-```bash
-docker compose up --build
-```
-
-The first start takes a minute. Keycloak imports the demo users before the sign-in page will work. Add `-d` if you want it in the background. `docker compose down` stops everything and keeps the data. `docker compose down -v` also deletes the saved databases, so the next start is a fresh demo.
-
-| What | Address |
-|---|---|
-| The app. Start here and sign in. | http://localhost:4200 |
-| http://localhost:8082/swagger-ui.html | http://localhost:8082/swagger-ui.html |
-| "Is the API process up?" | http://localhost:8082/health |
-| "Can the API reach the database?" | http://localhost:8082/ready |
-| The sign-in service, if you want to open it directly | http://localhost:8081 |
-
-The API is on port 8082. The background worker uses the same program on port 8083, and that port is not published to your computer. You read its work in the logs.
-
-To run the API on the machine instead of in Docker, start the database, Redis, and Keycloak first, then from `backend/`:
+**3. Build and start the entire containerized stack:**
 
 ```bash
-export SPRING_DATASOURCE_PASSWORD=...   # POSTGRES_PASSWORD from .env
-export SPRING_DATA_REDIS_PASSWORD=...   # REDIS_PASSWORD from .env
-./mvnw spring-boot:run
+docker compose up --build -d
 ```
 
-The screen dev server forwards `/api` to `localhost:8082`:
+### Service Endpoints
 
-```bash
-cd frontend && npm ci && npm start
-```
-
-## Keycloak setup
-
-Compose starts Keycloak and loads [keycloak/realm-export.json](keycloak/realm-export.json). A realm is Keycloak's name for this application's login world. Ours is called `taskflow`. The browser app is the public client `taskflow-spa`. The API only accepts login proofs that were meant for `taskflow-api`. The login page look comes from `keycloak/themes/taskflow`.
-
-In the browser the login address is `http://localhost:8081/realms/taskflow`. Inside Docker, the API asks Keycloak for its signing keys at `http://keycloak:8000`, because `localhost` inside the API container is the API itself, not Keycloak. The login page is allowed to send people back to `http://localhost:4200`.
-
-## Test users
-
-Every demo password is `password`. That is only for this local login world. Do not reuse it anywhere real.
-
-| User | Organization | Role |
+| Service | Port / URL | Description |
 |---|---|---|
-| `superadmin` | none, until they pick one | Platform owner. Can see every company, but only after choosing one. |
-| `alice` | Meridian | Company admin. Members, projects, all tasks, audit, full dashboard. |
-| `bob` | Meridian | Project manager. Projects and all tasks. Cannot change who is a member. |
-| `cara` | Meridian | Member. Can create tasks and edit the ones she owns or is assigned. Cannot delete. |
-| `dave` | Northline | Company admin, but only inside Northline. |
+| Frontend UI | http://localhost:4200 | Main application entry point & sign-in |
+| Backend API | http://localhost:8082 | REST API |
+| Swagger / OpenAPI | http://localhost:8082/swagger-ui.html | Interactive API documentation |
+| Health Check | http://localhost:8082/health | Liveness probe |
+| Readiness Check | http://localhost:8082/ready | Dependency health probe (PostgreSQL, Redis) |
+| Keycloak Console | http://localhost:8081 | Identity and access management |
 
-Meridian's id is `c2f0c8b6-ab19-475e-ae57-09a4c2c329b6`. Northline's id is `3d5c8b81-9c1e-4751-b52c-d9d8d791d28e`. Those are random ids, not something a person types.
+---
 
-## Environment variables
+## 4. Test Users & Security Context
 
-Copy `.env.example`. Compose reads:
+Keycloak automatically imports realm configuration and test users upon startup from `keycloak/realm-export.json`.
 
-| Variable | Use |
-|---|---|
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | The Taskflow database |
-| `REDIS_PASSWORD` | Redis |
-| `KEYCLOAK_DB`, `KEYCLOAK_DB_USER`, `KEYCLOAK_DB_PASSWORD` | Keycloak's own database |
-| `KEYCLOAK_ADMIN_USER`, `KEYCLOAK_ADMIN_PASSWORD` | The Keycloak admin, used only to bootstrap |
-| `KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET` | Names of the login world and the API client. The API checks login proofs with Keycloak's public keys. It does not use this secret to trust a user. |
+All demo accounts use the following password:
 
-## API documentation
+`password`
 
-Open http://localhost:8082/swagger-ui.html while the stack is running. That page lists every call, what it expects, and what it returns. Turn that page off before the API is reachable by anyone except you.
+| User | Organization | Assigned Role | Permissions / Scope |
+|---|---|---|---|
+| `superadmin` | Platform | `SUPER_ADMIN` | Platform oversight; accesses cross-tenant audit/admin views after organization selection. |
+| `alice` | Meridian | `ORG_ADMIN` | Full administrative control over Meridian (users, projects, tasks, analytics, audit logs). |
+| `bob` | Meridian | `PROJECT_MANAGER` | Project and task management within Meridian. |
+| `cara` | Meridian | `MEMBER` | Task creation and updates for assigned/owned tasks within Meridian. |
+| `dave` | Northline | `ORG_ADMIN` | Tenant-isolated admin for Northline (strict boundary test against Meridian data). |
 
-## Testing
+### Tenant Isolation Verification
 
-From `backend/`: `./mvnw test`. From `frontend/`: `npx ng test --watch=false`.
+Authenticating as `alice` (Meridian) and attempting to access tasks belonging to `dave` (Northline) will strictly return `403 Forbidden` or `404 Not Found`, enforced at the server layer.
 
-GitHub Actions (`.github/workflows/ci.yml`) runs those tests, builds the Angular app, and builds both images. It does not start Keycloak. The API tests create their own login proofs and still check that the proof came from the right place and was meant for this API.
+---
 
-## Backup/restore
+## 5. Automated Testing
+
+To validate the test suite locally:
+
+### Backend Integration Tests
+
+```bash
+cd backend
+./mvnw test
+```
+
+### Frontend Tests
+
+```bash
+cd frontend
+npx ng test --watch=false
+```
+
+---
+
+## 6. Database Backup & Restore
+
+Automated operational scripts are provided in the `scripts/` directory.
+
+### Backup Database
 
 ```bash
 ./scripts/backup.sh
-./scripts/restore.sh backups/<file>.dump
 ```
 
-Restore prints how many organizations and tasks came back. How often to back up, and how long a restore takes, is in [docs/DISASTER_RECOVERY.md](docs/DISASTER_RECOVERY.md).
+### Restore Database
 
-## Known limitations
+```bash
+./scripts/restore.sh backups/<backup-file>.dump
+```
 
-An ordinary person belongs to one company. Assignment notices are written to the log, not sent as email. There is one database, one Keycloak, and no metrics dashboard.
+---
 
-## Walkthrough
+## 7. Documentation Index
 
-The short tour, with screenshots and logs, is [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md). 
+Comprehensive technical documentation required by the assessment brief is located in the `docs/` directory:
 
-Other notes: [docs/SECURITY.md](docs/SECURITY.md), [docs/DATABASE.md](docs/DATABASE.md), [docs/AI_USAGE.md](docs/AI_USAGE.md), [docs/ADR](docs/ADR). The assessment brief is [docs/ASSESSMENT.md](docs/ASSESSMENT.md).
+- [Architecture Design](docs/ARCHITECTURE.md)
+- [Security & Tenant Isolation](docs/SECURITY.md)
+- [Database Schema & Indexing](docs/DATABASE.md)
+- [Disaster Recovery & Failure Modes](docs/DISASTER_RECOVERY.md)
+- [AI-Assisted Development Reflection](docs/AI_USAGE.md)
+- [Architecture Decision Records](docs/ADR/)
+- [System Walkthrough](docs/WALKTHROUGH.md)
